@@ -7,6 +7,7 @@ import { take } from 'rxjs/operators';
 import { VideoGame } from '../core/models/video-game.model';
 import { VideoGameGenre } from '../core/models/video-games-genre.model';
 import { VideoGameRating } from '../core/models/video-games-rating.model';
+import { CurrencyPipe } from '@angular/common';
 
 
 @Component({
@@ -17,13 +18,21 @@ import { VideoGameRating } from '../core/models/video-games-rating.model';
 export class VideoGamesEditComponent implements OnInit {
   public videoGame: VideoGame = { videoGameId: 0 } as VideoGame;
   public videGameGenre: VideoGameGenre[] = [];
-  public videoGamerating: VideoGameRating[] = [];
+  public videoGameRating: VideoGameRating[] = [];
+  public selectedGenreId: number = 0;
+  public selectedRatingId: number = 0;
+  public minDate: Date = new Date();
+  public maxDate: Date = new Date();
   public submitted: boolean = false;
 
   constructor(private readonly videoGameService: VideoGameService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private fb: FormBuilder) { }
+    private currencyPipe: CurrencyPipe,
+    private fb: FormBuilder) {
+      this.minDate.setDate(this.minDate.getDate() - 30);
+      this.maxDate.setDate(this.maxDate.getDate() + 10);
+     }
 
   public videoGameForm: FormGroup = this.fb.group(
     {
@@ -31,13 +40,13 @@ export class VideoGamesEditComponent implements OnInit {
         [
           Validators.required,
           Validators.minLength(1),
-          Validators.maxLength(20)
+          Validators.maxLength(30)
         ]
       ],
-      releaseDate: ['', Validators.required],
       price: ['', Validators.required],
-      genreId: ['', Validators.required],
-      ratingId: ['', Validators.required]
+      releaseDate: [new Date(), Validators.required],
+      genreId: [0, Validators.required],
+      ratingId: [0, Validators.required]
     }
   );
 
@@ -47,6 +56,10 @@ export class VideoGamesEditComponent implements OnInit {
    });
   }
 
+  /**
+   * gets the relevant information and displays in the form
+   * @param id
+   */
   private initializeService(id: string) {
     combineLatest([
         this.videoGameService.getVideoGame(parseInt(id)),
@@ -57,11 +70,17 @@ export class VideoGamesEditComponent implements OnInit {
       .subscribe(([videoGame, genres, ratings]) => {
         this.videoGame = videoGame;
         this.videGameGenre = genres;
-        this.videoGamerating = ratings;
-
-        console.log(this.videoGame);
-        console.log(this.videGameGenre);
-        console.log(this.videoGamerating);
+        this.videoGameRating = ratings;
+        // display values
+        this.videoGameForm.setValue({
+          title: this.videoGame.title,
+          price: (this.videoGame.price ? this.currencyPipe.transform(this.videoGame.price, '$') : ''),
+          releaseDate: new Date(this.videoGame.releaseDate),
+          genreId: this.videoGame.genreId,
+          ratingId: this.videoGame.ratingId
+        });
+        this.selectedGenreId = this.videoGame.genreId;
+        this.selectedRatingId = this.videoGame.ratingId;
       });
   }
 
@@ -69,17 +88,64 @@ export class VideoGamesEditComponent implements OnInit {
     return this.videoGameForm.controls;
   }
 
+  public formatAmount(val: any): boolean {
+    if(typeof +val === "number" && !isNaN(+val)) {
+      this.videoGameForm.patchValue({ price: (val ? this.currencyPipe.transform(val, '$') : '') });
+    } else {
+      this.videoGameForm.patchValue({ price: ''});
+    }
+
+    return false;
+  }
+
+  public onGenreChange(val: any): boolean {
+    this.selectedGenreId = val;
+    return false;
+  }
+
+  public onRatingChange(val: any): boolean {
+    this.selectedRatingId = val;
+    return false;
+  }
+
   public onCancel() {
     this.router.navigate(['/catalog']);
+  }
+
+  public isValid(): boolean {
+   if (this.videoGameForm.invalid ||
+      this.selectedGenreId === 0 ||
+      this.selectedRatingId === 0) {
+        return false;
+    } else {
+      return true;
+    }
   }
 
   public onSubmit(): void {
     this.submitted = true;
 
-    if (this.videoGameForm.invalid) {
+    if (this.videoGameForm.invalid ||
+      this.selectedGenreId === 0 ||
+      this.selectedRatingId === 0) {
       return;
     }
-    console.log(JSON.stringify(this.videoGameForm.value, null, 2));
+
+    let noFormatPrice = this.videoGameForm.controls.price.value;
+    noFormatPrice = noFormatPrice.replace('$', '');
+
+    let saveDate: VideoGame = {
+      videoGameId: this.videoGame.videoGameId,
+      title: this.videoGameForm.controls.title.value,
+      price: noFormatPrice,
+      releaseDate: this.videoGameForm.controls.releaseDate.value,
+      genreId: this.selectedGenreId,
+      ratingId: this.selectedRatingId
+    } as VideoGame;
+
+    this.videoGameService.updateVideoGame(saveDate).subscribe(() => {
+      this.router.navigate(['/catalog']);
+    });
   }
 
 }

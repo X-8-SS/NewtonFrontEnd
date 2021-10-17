@@ -14,6 +14,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { VideoGamesEditComponent } from './video-games-edit/video-games-edit.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { CurrencyPipe } from '@angular/common';
 
 
 @NgModule({
@@ -34,9 +36,10 @@ import { ReactiveFormsModule } from '@angular/forms';
     MatIconModule,
     MatPaginatorModule,
     MatSortModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    BsDatepickerModule.forRoot()
   ],
-  providers: [],
+  providers:[CurrencyPipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
