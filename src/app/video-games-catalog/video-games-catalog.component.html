@@ -1,0 +1,41 @@
+<h3 class="p-3 text-center">Video Games Catalog</h3>
+
+<table mat-table [dataSource]="rowData" matSort  class="mat-elevation-z8">
+  <ng-container matColumnDef="title">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Title </th>
+    <td mat-cell *matCellDef="let element"> {{ element.title }} </td>
+  </ng-container>
+  <ng-container matColumnDef="releaseDate">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Release Date </th>
+    <td mat-cell *matCellDef="let element"> {{ element.releaseDate | date }} </td>
+  </ng-container>
+  <ng-container matColumnDef="price">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Price </th>
+    <td mat-cell *matCellDef="let element"> {{ element.price | currency}} </td>
+  </ng-container>
+  <ng-container matColumnDef="genreName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Genre </th>
+    <td mat-cell *matCellDef="let element"> {{ element.genreName }} </td>
+  </ng-container>
+  <ng-container matColumnDef="ratingCategory">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> Rating </th>
+    <td mat-cell *matCellDef="let element"> {{ element.ratingCategory }} </td>
+  </ng-container>
+
+  <ng-container matColumnDef="update">
+      <th mat-header-cell *matHeaderCellDef> Update </th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button color="accent" (click)="redirectToUpdate(element.videoGameId)">
+            <mat-icon class="mat-12 blue">edit</mat-icon>
+        </button>
+      </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+    <tr mat-row *matRowDef="let row; columns: columnsToDisplay;"></tr>
+</table>
+<br />
+<mat-paginator
+  [pageSizeOptions]="[5, 10]"
+  showFirstLastButtons
+></mat-paginator>
