@@ -1,14 +1,13 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { VideoGameService } from 'src/app/core/services/video-game.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { VideoGameService } from 'src/app/core/services/video-game.service';
 import { VideoGame } from '../core/models/video-game.model';
 import { VideoGameGenre } from '../core/models/video-games-genre.model';
 import { VideoGameRating } from '../core/models/video-games-rating.model';
-import { CurrencyPipe } from '@angular/common';
-
 
 @Component({
   selector: 'app-video-games-edit',
@@ -34,6 +33,9 @@ export class VideoGamesEditComponent implements OnInit {
       this.maxDate.setDate(this.maxDate.getDate() + 10);
      }
 
+  /**
+   * Here is our Form
+   */
   public videoGameForm: FormGroup = this.fb.group(
     {
       title: ['',
@@ -79,39 +81,65 @@ export class VideoGamesEditComponent implements OnInit {
           genreId: this.videoGame.genreId,
           ratingId: this.videoGame.ratingId
         });
+        // update the selectors
         this.selectedGenreId = this.videoGame.genreId;
         this.selectedRatingId = this.videoGame.ratingId;
       });
   }
 
+  /**
+   * return form elements
+   */
   public get f(): { [key: string]: AbstractControl } {
     return this.videoGameForm.controls;
   }
 
+  /**
+   * taken easy approach for currency formatting
+   * @param val
+   * @returns
+   */
   public formatAmount(val: any): boolean {
     if(typeof +val === "number" && !isNaN(+val)) {
       this.videoGameForm.patchValue({ price: (val ? this.currencyPipe.transform(val, '$') : '') });
     } else {
       this.videoGameForm.patchValue({ price: ''});
     }
-
+    // don't do anything
     return false;
   }
 
+  /**
+   * set the selected item id
+   * @param val
+   * @returns
+   */
   public onGenreChange(val: any): boolean {
     this.selectedGenreId = val;
     return false;
   }
 
+  /**
+   * set the selected item id
+   * @param val
+   * @returns
+   */
   public onRatingChange(val: any): boolean {
     this.selectedRatingId = val;
     return false;
   }
 
+  /**
+   * Go back where you came from... LOL
+   */
   public onCancel() {
     this.router.navigate(['/catalog']);
   }
 
+  /**
+   * Is the Form valid enable the Save button
+   * @returns true/false
+   */
   public isValid(): boolean {
    if (this.videoGameForm.invalid ||
       this.selectedGenreId === 0 ||

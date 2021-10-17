@@ -28,10 +28,17 @@ export class VideoGamesCatalogComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * redirection
+   * @param id
+   */
   public redirectToUpdate = (id: number) => {
     this.router.navigate(['/edit', id]);
   }
 
+  /**
+   * Used Angular material table
+   */
   ngAfterViewInit(): void {
     this.rowData.paginator = this.paginator;
     this.rowData.sort = this.sort;
